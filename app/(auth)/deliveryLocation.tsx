@@ -1,28 +1,34 @@
 import React from "react";
 import { FlatList, Image, Text, TouchableOpacity, View } from "react-native";
-import Svg, { Path } from "react-native-svg";
+import Svg, { Path, SvgProps } from "react-native-svg";
+import { SvgXml } from "react-native-svg";
 
-import AE from "country-flag-icons/3x2/AE.svg";
-import BH from "country-flag-icons/3x2/BH.svg";
-import EG from "country-flag-icons/3x2/EG.svg";
-import IQ from "country-flag-icons/3x2/IQ.svg";
-import JO from "country-flag-icons/3x2/JO.svg";
-import KW from "country-flag-icons/3x2/KW.svg";
-import OM from "country-flag-icons/3x2/OM.svg";
-import QA from "country-flag-icons/3x2/QA.svg";
-import SA from "country-flag-icons/3x2/SA.svg";
+import {
+  AE,
+  BH,
+  EG,
+  IQ,
+  JO,
+  KW,
+  OM,
+  QA,
+  SA,
+} from "country-flag-icons/string/3x2";
 import { useRouter } from "expo-router";
 
+const makeFlag = (xml: string) => (props: SvgProps) =>
+  <SvgXml xml={xml} {...props} />;
+
 const FLAGS: Record<string, React.FC<import("react-native-svg").SvgProps>> = {
-  kw: KW,
-  sa: SA,
-  bh: BH,
-  ae: AE,
-  om: OM,
-  qa: QA,
-  jo: JO,
-  eg: EG,
-  iq: IQ,
+  kw: makeFlag(KW),
+  sa: makeFlag(SA),
+  bh: makeFlag(BH),
+  ae: makeFlag(AE),
+  om: makeFlag(OM),
+  qa: makeFlag(QA),
+  jo: makeFlag(JO),
+  eg: makeFlag(EG),
+  iq: makeFlag(IQ),
 };
 
 const COUNTRIES = [
