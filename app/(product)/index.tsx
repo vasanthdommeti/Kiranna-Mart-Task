@@ -1,11 +1,11 @@
 "use client";
 import ProductModal from "@/components/ProductModal";
 import { useCart } from "@/context/CartContext";
-import { TAB_LABELS } from "@/data";
+import { menuItems, TAB_LABELS } from "@/data";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Image,
   Platform,
@@ -14,15 +14,21 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
+import { Share } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function ProductCardScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
-  const { selected } = useCart();
-  const item = selected!;
+  const { selected, addToCart, totalItems, cartTotal } = useCart();
+  const params = useLocalSearchParams();
+  const item = selected;
   const [activeTab, setActiveTab] = useState(0);
   const [showModal, setShowModal] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
+  const [activeMenuItem, setActiveMenuItem] = useState<
+    (typeof menuItems)[number] | null
+  >(null);
 
   const scrollViewRef = useRef<ScrollView>(null);
   const tabScrollRef = useRef<ScrollView>(null);
@@ -41,19 +47,47 @@ export default function ProductCardScreen() {
     }
   };
 
+  useEffect(() => {
+    const rawItemId = params?.itemId;
+    const itemId = Array.isArray(rawItemId) ? rawItemId[0] : rawItemId;
+    if (typeof itemId === "string") {
+      const found = menuItems.find((m) => m.id === itemId);
+      if (found) {
+        setActiveMenuItem(found);
+        setShowModal(true);
+      }
+    }
+  }, [params]);
+
+  if (!item) {
+    return (
+      <View className="flex-1 items-center justify-center bg-white">
+        <Text className="text-lg text-gray-700">No restaurant selected.</Text>
+      </View>
+    );
+  }
+
   return (
     <View className="flex-1 bg-white" style={{ paddingBottom: insets.bottom }}>
       <StatusBar style="auto" />
       {/* Hero image + overlay buttons */}
-
       <ProductModal
         visible={showModal}
-        onClose={() => setShowModal(false)}
-        image={require("../../assets/images/Banner.png")}
-        title="Fried Potatoes"
-        subtitle="Top rated"
-        description="Crispy potato slices, fried to perfection for a satisfying crunch."
-        price="KWD 0.600"
+        onClose={() => {
+          setShowModal(false);
+          setActiveMenuItem(null);
+        }}
+        onAdd={(qty, note) => {
+          if (!activeMenuItem) return;
+          addToCart(activeMenuItem as any, qty, note);
+        }}
+        initialQuantity={1}
+        initialNote=""
+        image={activeMenuItem?.image || require("../../assets/images/Banner.png")}
+        title={activeMenuItem?.name || "Item"}
+        subtitle={activeMenuItem?.section || "Top rated"}
+        description={activeMenuItem?.description || ""}
+        price={`KWD ${(activeMenuItem?.price ?? 0).toFixed(3)}`}
       />
       <View className="flex-none">
         <Image source={item.image} className="w-full h-64" resizeMode="cover" />
@@ -69,13 +103,33 @@ export default function ProductCardScreen() {
             <Ionicons name="arrow-back" size={22} color="#333" />
           </TouchableOpacity>
           <View className="flex-row gap-2">
-            <TouchableOpacity className="bg-white p-2 rounded-full shadow">
-              <Ionicons name="heart-outline" size={22} color="#333" />
+            <TouchableOpacity
+              className="bg-white p-2 rounded-full shadow"
+              onPress={() => setIsFavorite((f) => !f)}
+            >
+              <Ionicons
+                name={isFavorite ? "heart" : "heart-outline"}
+                size={22}
+                color={isFavorite ? "#F97316" : "#333"}
+              />
             </TouchableOpacity>
-            <TouchableOpacity className="bg-white p-2 rounded-full shadow">
+            <TouchableOpacity
+              className="bg-white p-2 rounded-full shadow"
+              onPress={() =>
+                Share.share({
+                  title: item.name,
+                  message: `Check out ${item.name} on our app!`,
+                })
+              }
+            >
               <MaterialIcons name="share" size={22} color="#333" />
             </TouchableOpacity>
-            <TouchableOpacity className="bg-white p-2 rounded-full shadow">
+            <TouchableOpacity
+              className="bg-white p-2 rounded-full shadow"
+              onPress={() =>
+                router.push({ pathname: "/search", params: { scope: "items" } })
+              }
+            >
               <Ionicons name="search" size={22} color="#333" />
             </TouchableOpacity>
           </View>
@@ -173,21 +227,28 @@ export default function ProductCardScreen() {
                 {TAB_LABELS[i]}
               </Text>
               <View className="flex-row flex-wrap -mx-2">
-                {[1, 2, 3, 4].map((_, j) => (
-                  <TouchableOpacity
-                    key={j}
-                    className="w-1/2 px-2 mb-4"
-                    onPress={() => setShowModal(true)}
-                  >
-                    <Image
-                      source={item.image}
-                      className="w-full h-32 rounded-xl"
-                      resizeMode="cover"
-                    />
-                    <Text className="mt-2 font-semibold">Item {j + 1}</Text>
-                    <Text className="text-gray-500">KWD 0.600</Text>
-                  </TouchableOpacity>
-                ))}
+                {menuItems
+                  .filter((m) => m.section === TAB_LABELS[i])
+                  .map((m) => (
+                    <TouchableOpacity
+                      key={m.id}
+                      className="w-1/2 px-2 mb-4"
+                      onPress={() => {
+                        setActiveMenuItem(m);
+                        setShowModal(true);
+                      }}
+                    >
+                      <Image
+                        source={m.image}
+                        className="w-full h-32 rounded-xl"
+                        resizeMode="cover"
+                      />
+                      <Text className="mt-2 font-semibold">{m.name}</Text>
+                      <Text className="text-gray-500">
+                        KWD {(m.price ?? 0).toFixed(3)}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
               </View>
             </View>
           ))}
@@ -195,23 +256,29 @@ export default function ProductCardScreen() {
       </View>
 
       {/* cart footer */}
-      <View
-        className="flex-none bg-white border-t border-gray-200 px-4 py-3"
-        style={{ paddingBottom: Platform.OS === "ios" ? 0 : 0 }}
-      >
-        <TouchableOpacity
-          className="w-11/12 mx-auto bg-orange-500 mt-2 rounded-full flex-row items-center justify-between px-4 py-2"
-          onPress={() => router.navigate("/(product)/cart")}
+      {totalItems > 0 && (
+        <View
+          className="flex-none bg-white border-t border-gray-200 px-4 py-3"
+          style={{ paddingBottom: Platform.OS === "ios" ? 0 : 0 }}
         >
-          <View className="flex flex-row gap-2 justify-center items-center">
-            <View className="bg-orange-700 rounded-full w-10 aspect-square items-center justify-center">
-              <Text className="text-white text-xl font-medium">0</Text>
+          <TouchableOpacity
+            className="w-11/12 mx-auto bg-orange-500 mt-2 rounded-full flex-row items-center justify-between px-4 py-2"
+            onPress={() => router.navigate("/(product)/cart")}
+          >
+            <View className="flex flex-row gap-2 justify-center items-center">
+              <View className="bg-orange-700 rounded-full w-10 aspect-square items-center justify-center">
+                <Text className="text-white text-xl font-medium">
+                  {totalItems}
+                </Text>
+              </View>
+              <Text className="text-white text-lg font-medium">View cart</Text>
             </View>
-            <Text className="text-white text-lg font-medium">View cart</Text>
-          </View>
-          <Text className="text-white text-lg font-bold">KWD 0.00</Text>
-        </TouchableOpacity>
-      </View>
+            <Text className="text-white text-lg font-bold">
+              KWD {cartTotal.toFixed(3)}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </View>
   );
 }

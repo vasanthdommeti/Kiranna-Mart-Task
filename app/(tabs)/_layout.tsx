@@ -49,9 +49,18 @@ export default function TabLayout() {
         options={{
           title: "Orders",
           tabBarIcon: ({ color }) => (
-            <MaterialIcons size={28} name="bookmark-border" color={color} />
+            <MaterialIcons size={28} name="receipt-long" color={color} />
           ),
-          tabBarStyle: { display: "none" }, // Not needed anymore
+          tabBarLabel: ({ focused }) => (
+            <Text
+              style={{
+                color: focused ? "black" : inactiveColor,
+                fontSize: 12,
+              }}
+            >
+              Orders
+            </Text>
+          ),
         }}
       />
       <Tabs.Screen

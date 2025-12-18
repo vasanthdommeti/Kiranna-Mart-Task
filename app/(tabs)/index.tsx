@@ -1,4 +1,5 @@
 import PromoModal from "@/components/PromoModal";
+import { useCart } from "@/context/CartContext";
 import { useLastTab } from "@/context/LastTabContext";
 import { useLocation } from "@/context/LocationContext";
 import { categories, restaurants } from "@/data";
@@ -7,7 +8,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useBottomTabBarHeight } from "@react-navigation/bottom-tabs";
 import { useFocusEffect, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
   Image,
   ImageBackground,
@@ -34,6 +35,7 @@ const ChevronDownIcon = (props: any) => (
 
 export default function HomeScreen() {
   const router = useRouter();
+  const { setSelected, totalItems } = useCart();
   const { setLastTab } = useLastTab();
   const { address } = useLocation();
   const insets = { top: 44, bottom: 34, left: 0, right: 0 };
@@ -54,6 +56,31 @@ export default function HomeScreen() {
     "Sushi",
   ]);
 
+  const homeAddress = useMemo(() => {
+    if (!address) return "Choose delivery location";
+    const coordsMatch = address.match(/\(([^)]*)\)\s*$/);
+    const coordsRaw = coordsMatch?.[1];
+    const base = address.replace(/\s*\([^)]*\)\s*$/, "").trim();
+    const parts = base
+      .split(",")
+      .map((p) => p.trim())
+      .filter(Boolean);
+    if (parts.length === 0) return base;
+    const first = parts[0];
+    if (coordsRaw && parts.length === 1) {
+      const nums = coordsRaw
+        .split(",")
+        .map((n) => Number.parseFloat(n.trim()))
+        .filter((n) => Number.isFinite(n));
+      if (nums.length >= 2) {
+        return `${first} (${nums[0].toFixed(2)}, ${nums[1].toFixed(2)})`;
+      }
+      return `${first} (${coordsRaw})`;
+    }
+    if (first.length < 10 && parts.length > 1) return `${first}, ${parts[1]}`;
+    return first;
+  }, [address]);
+
   useFocusEffect(
     useCallback(() => {
       setLastTab("/(tabs)");
@@ -61,7 +88,6 @@ export default function HomeScreen() {
   );
 
   const footerSpacing = tabBarHeight;
-
   const createDoubleWavePath = (width: number, height: number) => {
     const amplitude = 20;
     const y = height - amplitude;
@@ -143,35 +169,53 @@ export default function HomeScreen() {
             className="px-4 pb-14"
             style={{ paddingTop: insets.top + 16 }}
           >
-            <View className="flex flex-row justify-between">
+            <View className="flex flex-row items-center justify-between">
               <TouchableOpacity
                 className="flex-row items-center"
-                onPress={() => router.navigate("/(tabs)/order")}
+                onPress={() => router.push("/location")}
+                style={{ flex: 1, minWidth: 0 }}
               >
-                <Text className="text-white text-lg font-semibold">
-                  {address ?? "Choose delivery location"}
+                <Text
+                  className="text-white text-lg font-semibold"
+                  numberOfLines={1}
+                  ellipsizeMode="tail"
+                  style={{ flexShrink: 1, minWidth: 0 }}
+                >
+                  {homeAddress}
                 </Text>
                 <ChevronDownIcon className="ml-1" />
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() => router.push("/cart")}
                 className="relative p-2 bg-white rounded-full"
+                style={{ marginLeft: 12 }}
               >
                 <Ionicons name="cart-outline" size={24} color="#F97316" />
 
-                <View className="absolute -bottom-1 -right-1 bg-orange-500 w-5 h-5 border border-white rounded-full justify-center items-center">
-                  <Text className="text-white text-xs">8</Text>
-                </View>
+                {totalItems > 0 && (
+                  <View className="absolute -bottom-1 -right-1 bg-orange-500 min-w-5 h-5 px-1 border border-white rounded-full justify-center items-center">
+                    <Text className="text-white text-xs">{totalItems}</Text>
+                  </View>
+                )}
               </TouchableOpacity>
             </View>
 
             <View className="mt-4 bg-white flex-row items-center justify-center h-12 px-4 rounded-full shadow-md">
               <Ionicons name="search" size={24} color="#1f2937" />
-              <TextInput
-                placeholder={`Search for ${rotatingPlaceholder}`}
-                placeholderTextColor="#1f2937"
-                className="flex-1 ml-2 text-base text-gray-800"
-              />
+              <TouchableOpacity
+                style={{ flex: 1, marginLeft: 8 }}
+                onPress={() =>
+                  router.push({
+                    pathname: "/search",
+                    params: { scope: "restaurants" },
+                  })
+                }
+                activeOpacity={0.8}
+              >
+                <Text className="text-base text-gray-800">
+                  {`Search for ${rotatingPlaceholder}`}
+                </Text>
+              </TouchableOpacity>
             </View>
           </View>
         </View>

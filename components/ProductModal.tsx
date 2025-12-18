@@ -9,6 +9,7 @@ import {
   StatusBar,
   Text,
   TouchableOpacity,
+  TextInput,
   View,
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -16,6 +17,9 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 export default function ProductModal({
   visible,
   onClose,
+  onAdd,
+  initialQuantity = 1,
+  initialNote = "",
   image,
   title,
   subtitle,
@@ -23,6 +27,20 @@ export default function ProductModal({
   price,
 }: ProductModalProps) {
   const insets = useSafeAreaInsets();
+  const [quantity, setQuantity] = React.useState(initialQuantity);
+  const [note, setNote] = React.useState(initialNote);
+  const numericPrice = React.useMemo(() => {
+    const cleaned = parseFloat((price || "").replace(/[^\d.]/g, ""));
+    return Number.isFinite(cleaned) ? cleaned : 0;
+  }, [price]);
+  const total = (numericPrice * quantity || 0).toFixed(3);
+
+  React.useEffect(() => {
+    if (visible) {
+      setQuantity(initialQuantity);
+      setNote(initialNote);
+    }
+  }, [visible, initialNote, initialQuantity]);
 
   return (
     <Modal
@@ -75,33 +93,59 @@ export default function ProductModal({
             <Text className="text-gray-600 mb-4">{description}</Text>
           )}
 
-          <View className="flex-row items-center justify-between mb-6">
-            <View className="flex-row items-center">
-              <Ionicons name="chatbubble-outline" size={20} color="#333" />
-              <Text className="ml-2 text-gray-700">Any special requests?</Text>
+          <View className="mb-6">
+            <View className="flex-row items-center justify-between mb-2">
+              <View className="flex-row items-center">
+                <Ionicons name="chatbubble-outline" size={20} color="#333" />
+                <Text className="ml-2 text-gray-700">
+                  Any special requests?
+                </Text>
+              </View>
+              <Text className="text-orange-500 font-semibold">
+                {note ? "Edit note" : "Add note"}
+              </Text>
             </View>
-            <Text className="text-orange-500 font-semibold">Add note</Text>
+            <TextInput
+              placeholder="Ex: No onions, extra sauce..."
+              value={note}
+              onChangeText={setNote}
+              className="border border-gray-200 rounded-xl px-3 py-2 text-base text-gray-800"
+              multiline
+            />
           </View>
 
           <View className="flex-row items-center justify-between mt-auto">
             <View className="flex-row items-center bg-white border border-gray-100 rounded-full">
-              <TouchableOpacity className="px-4 py-4" onPress={() => {}}>
+              <TouchableOpacity
+                className="px-4 py-4"
+                onPress={() => setQuantity((q) => Math.max(1, q - 1))}
+              >
                 <Ionicons name="remove" size={24} color="#333" />
               </TouchableOpacity>
-              <Text className="px-4 text-xl">1</Text>
-              <TouchableOpacity className="px-4 py-2" onPress={() => {}}>
+              <Text className="px-4 text-xl">{quantity}</Text>
+              <TouchableOpacity
+                className="px-4 py-2"
+                onPress={() => setQuantity((q) => q + 1)}
+              >
                 <Ionicons name="add" size={24} color="#f97316" />
               </TouchableOpacity>
             </View>
 
             <TouchableOpacity
               className="flex-row items-center bg-orange-500 px-6 py-4 rounded-full gap-3"
-              onPress={onClose}
+              onPress={() => {
+                onAdd(quantity, note.trim());
+                onClose();
+                setQuantity(1);
+                setNote("");
+              }}
             >
               <Text className="text-white text-lg font-semibold">
                 Add item&nbsp;
               </Text>
-              <Text className="text-white text-lg font-semibold">{price}</Text>
+              <Text className="text-white text-lg font-semibold">
+                KWD {total}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
