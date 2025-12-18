@@ -64,6 +64,12 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name="order/[id]"
+        options={{
+          href: null, // hide detail screen from tab bar
+        }}
+      />
+      <Tabs.Screen
         name="account"
         options={{
           title: "Account",

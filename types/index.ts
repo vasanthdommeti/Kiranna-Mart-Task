@@ -73,3 +73,35 @@ export interface LocationState {
   address?: string;
   setLocation: (region: Region, address: string) => void;
 }
+
+export type OrderItem = {
+  id: string;
+  name: string;
+  price: number;
+  quantity: number;
+  note?: string;
+  image: any;
+};
+
+export type OrderTimelineStatus = "done" | "current" | "pending";
+
+export type OrderTimelineEntry = {
+  key: string;
+  label: string;
+  at?: number;
+  status: OrderTimelineStatus;
+};
+
+export type Order = {
+  id: string;
+  orderNumber: string;
+  status: string;
+  createdAt: number;
+  subtotal: number;
+  deliveryFee: number;
+  total: number;
+  note?: string;
+  address?: string;
+  items: OrderItem[];
+  timeline: OrderTimelineEntry[];
+};

@@ -73,6 +73,44 @@ export default function CartScreen() {
   const deliveryFee = cartItems.length > 0 ? 0.5 : 0;
   const total = subtotal + deliveryFee;
 
+  if (cartItems.length === 0) {
+    return (
+      <SafeAreaView className="flex-1 bg-white">
+        {/* Header */}
+        <View className="flex-row items-center px-4 py-3">
+          <TouchableOpacity
+            onPress={() => router.back()}
+            className="p-2 rounded-full border border-gray-200"
+          >
+            <Ionicons name="arrow-back" size={24} color="#333" />
+          </TouchableOpacity>
+          <View className="ml-4">
+            <Text className="text-lg font-bold">Cart</Text>
+            <Text className="text-gray-500 text-sm">Ebn 3my</Text>
+          </View>
+        </View>
+
+        <View className="flex-1 items-center justify-center px-6">
+          <View className="w-16 h-16 rounded-full bg-orange-50 items-center justify-center mb-4">
+            <Ionicons name="cart-outline" size={28} color="#F97316" />
+          </View>
+          <Text className="text-xl font-semibold text-black mb-2">
+            Your cart is empty
+          </Text>
+          <Text className="text-gray-600 text-center mb-6">
+            Add items to get started.
+          </Text>
+          <TouchableOpacity
+            className="bg-orange-500 px-6 py-3 rounded-full"
+            onPress={() => router.replace("/(tabs)")}
+          >
+            <Text className="text-white font-semibold">Start shopping</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView className="flex-1 bg-white">
       {editing && (
@@ -115,79 +153,73 @@ export default function CartScreen() {
         overScrollMode="never"
       >
         {/* Cart Items */}
-        {cartItems.length === 0 ? (
-          <Text className="px-4 text-base text-gray-600">
-            Your cart is empty. Add items to get started.
-          </Text>
-        ) : (
-          cartItems.map((c) => (
-            <View key={c.item.id} className="px-4 mb-6">
-              <View className="flex-row h-36">
-                <View className="flex flex-col justify-between flex-1 pr-4 h-full">
-                  <View>
-                    <Text className="text-xl font-medium">{c.item.name}</Text>
-                    <TouchableOpacity
-                      className="flex-row items-center mt-1"
-                      onPress={() => {
-                        const price = c.item.price ?? priceFor(c.item);
-                        setEditing({
-                          id: c.item.id,
-                          name: c.item.name,
-                          image: c.item.image,
-                          price,
-                          quantity: c.quantity,
-                          note: c.note,
-                        });
-                      }}
-                    >
-                      <Ionicons name="pencil-outline" size={18} color="#F97316" />
-                      <Text className="text-orange-500 ml-1">Edit</Text>
-                    </TouchableOpacity>
-                  </View>
-                  <Text className="text-lg font-medium mt-3">
-                    <Text className="text-lg font-light">KD</Text>{" "}
-                    {(priceFor(c.item) * c.quantity).toFixed(3)}
-                  </Text>
+        {cartItems.map((c) => (
+          <View key={c.item.id} className="px-4 mb-6">
+            <View className="flex-row h-36">
+              <View className="flex flex-col justify-between flex-1 pr-4 h-full">
+                <View>
+                  <Text className="text-xl font-medium">{c.item.name}</Text>
+                  <TouchableOpacity
+                    className="flex-row items-center mt-1"
+                    onPress={() => {
+                      const price = c.item.price ?? priceFor(c.item);
+                      setEditing({
+                        id: c.item.id,
+                        name: c.item.name,
+                        image: c.item.image,
+                        price,
+                        quantity: c.quantity,
+                        note: c.note,
+                      });
+                    }}
+                  >
+                    <Ionicons name="pencil-outline" size={18} color="#F97316" />
+                    <Text className="text-orange-500 ml-1">Edit</Text>
+                  </TouchableOpacity>
                 </View>
-                <View className="relative">
-                  <Image
-                    source={c.item.image}
-                    className="w-36 h-36 rounded-lg"
-                    resizeMode="cover"
-                  />
-                  <View className="absolute bottom-2 -translate-x-1/2 left-1/2 bg-white rounded-full flex-row items-center px-2 py-2 shadow">
-                    <TouchableOpacity
-                      onPress={() =>
-                        updateQuantity(c.item.id, Math.max(0, c.quantity - 1))
-                      }
-                    >
-                      <MaterialIcons
-                        name="delete-outline"
-                        size={24}
-                        color="#F97316"
-                      />
-                    </TouchableOpacity>
-                    <Text className="px-6 text-lg font-medium">
-                      {c.quantity}
-                    </Text>
-                    <TouchableOpacity
-                      onPress={() => updateQuantity(c.item.id, c.quantity + 1)}
-                    >
-                      <Ionicons
-                        name="add-circle-outline"
-                        size={24}
-                        color="#F97316"
-                      />
-                    </TouchableOpacity>
-                  </View>
+                <Text className="text-lg font-medium mt-3">
+                  <Text className="text-lg font-light">KD</Text>{" "}
+                  {(priceFor(c.item) * c.quantity).toFixed(3)}
+                </Text>
+              </View>
+              <View className="relative">
+                <Image
+                  source={c.item.image}
+                  className="w-36 h-36 rounded-lg"
+                  resizeMode="cover"
+                />
+                <View className="absolute bottom-2 -translate-x-1/2 left-1/2 bg-white rounded-full flex-row items-center px-2 py-2 shadow">
+                  <TouchableOpacity
+                    onPress={() =>
+                      updateQuantity(c.item.id, Math.max(0, c.quantity - 1))
+                    }
+                  >
+                    <MaterialIcons
+                      name="delete-outline"
+                      size={24}
+                      color="#F97316"
+                    />
+                  </TouchableOpacity>
+                  <Text className="px-6 text-lg font-medium">
+                    {c.quantity}
+                  </Text>
+                  <TouchableOpacity
+                    onPress={() => updateQuantity(c.item.id, c.quantity + 1)}
+                  >
+                    <Ionicons
+                      name="add-circle-outline"
+                      size={24}
+                      color="#F97316"
+                    />
+                  </TouchableOpacity>
                 </View>
               </View>
-              {c.note ? (
-                <Text className="mt-2 text-base text-gray-700">{c.note}</Text>
-              ) : null}
             </View>
-          ))
-        )}
+            {c.note ? (
+              <Text className="mt-2 text-base text-gray-700">{c.note}</Text>
+            ) : null}
+          </View>
+        ))}
 
         {/* You might also like… */}
         <View className="bg-orange-200 mt-8 py-8">
@@ -396,7 +428,10 @@ export default function CartScreen() {
         >
           <Text className="text-base font-medium">Add items</Text>
         </TouchableOpacity>
-        <TouchableOpacity className="flex-1 bg-orange-500 rounded-full py-3 items-center">
+        <TouchableOpacity
+          className="flex-1 bg-orange-500 rounded-full py-3 items-center"
+          onPress={() => router.push("/(product)/checkout")}
+        >
           <Text className="text-base font-semibold text-white">Checkout</Text>
         </TouchableOpacity>
       </View>

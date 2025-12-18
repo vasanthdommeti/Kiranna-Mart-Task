@@ -6,6 +6,7 @@ export default function ProductLayout() {
     <Stack screenOptions={{ headerShown: false, animation: "fade" }}>
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="cart" options={{ headerShown: false }} />
+      <Stack.Screen name="checkout" options={{ headerShown: false }} />
     </Stack>
   );
 }
