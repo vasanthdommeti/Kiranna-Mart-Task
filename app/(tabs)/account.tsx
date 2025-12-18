@@ -6,6 +6,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { SvgXml, SvgProps } from "react-native-svg";
 
 import { useLastTab } from "@/context/LastTabContext";
+import { useAuthStore } from "@/store/auth";
 import {
   AE,
   BH,
@@ -41,6 +42,9 @@ export default function AccountScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const { setLastTab } = useLastTab();
+  const user = useAuthStore((s) => s.user);
+  const logout = useAuthStore((s) => s.logout);
+  const hasSkippedAuth = useAuthStore((s) => s.hasSkippedAuth);
   const Flag = FLAG_URIS["kw"];
 
   useFocusEffect(
@@ -59,7 +63,9 @@ export default function AccountScreen() {
             <Ionicons name="person" size={24} color="#000" />
           </View>
           <View className="ml-3 gap-1">
-            <Text className="text-xl font-normal text-black">Hi guest</Text>
+            <Text className="text-xl font-normal text-black">
+              Hi {user ? user.name : "guest"}
+            </Text>
             <View className="flex-row items-center gap-1">
               <View className="w-5 h-5 rounded-full overflow-hidden border border-gray-200">
                 <Flag
@@ -68,51 +74,79 @@ export default function AccountScreen() {
                   preserveAspectRatio="xMidYMid slice"
                 />
               </View>
-              <Text className="text-sm text-gray-400">Kuwait</Text>
+              <Text className="text-sm text-gray-400">
+                {user
+                  ? `Signed in with ${user.provider}`
+                  : hasSkippedAuth
+                    ? "Guest mode"
+                    : "Kuwait"}
+              </Text>
             </View>
           </View>
         </View>
-        {/* Settings */}
-        <TouchableOpacity>
-          <Ionicons name="settings-outline" size={24} color="#4B5563" />
-        </TouchableOpacity>
+        {/* Settings / Logout */}
+        {user ? (
+          <TouchableOpacity
+            onPress={() => {
+              logout();
+              router.replace("/(auth)");
+            }}
+          >
+            <Ionicons name="log-out-outline" size={24} color="#4B5563" />
+          </TouchableOpacity>
+        ) : (
+          <TouchableOpacity>
+            <Ionicons name="settings-outline" size={24} color="#4B5563" />
+          </TouchableOpacity>
+        )}
       </View>
 
       {/* “Hey there!” card */}
-      <View className="mx-4 mt-4 bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex-row">
-        <View className="pr-2" style={{ flex: 7 }}>
-          <Text className="text-xl font-medium text-black">Hey there!</Text>
-          <Text className="text-gray-600 font-normal mt-1 text-base">
-            Log in or sign up for a more personalized ordering experience
-          </Text>
-          <TouchableOpacity
-            className="mt-4 bg-orange-500 px-5 py-2 rounded-full self-start"
-            onPress={() => router.navigate("/(auth)/login")}
-          >
-            <Text className="text-white font-medium text-base">Log in</Text>
-          </TouchableOpacity>
-        </View>
+      {!user ? (
+        <View className="mx-4 mt-4 bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex-row">
+          <View className="pr-2" style={{ flex: 7 }}>
+            <Text className="text-xl font-medium text-black">Hey there!</Text>
+            <Text className="text-gray-600 font-normal mt-1 text-base">
+              Log in or sign up for a more personalized ordering experience
+            </Text>
+            <TouchableOpacity
+              className="mt-4 bg-orange-500 px-5 py-2 rounded-full self-start"
+              onPress={() => router.navigate("/(auth)")}
+            >
+              <Text className="text-white font-medium text-base">Log in</Text>
+            </TouchableOpacity>
+          </View>
 
-        <View className="items-end" style={{ flex: 3 }}>
-          <Image
-            source={require("../../assets/images/web2app.webp")}
-            className="w-20 h-20"
-            resizeMode="contain"
-          />
+          <View className="items-end" style={{ flex: 3 }}>
+            <Image
+              source={require("../../assets/images/web2app.webp")}
+              className="w-20 h-20"
+              resizeMode="contain"
+            />
+          </View>
         </View>
-      </View>
+      ) : null}
 
       {/* Menu Items */}
       <View className="mt-6">
-        <TouchableOpacity className="flex-row items-center px-4 py-3">
+        <TouchableOpacity
+          className="flex-row items-center px-4 py-3"
+          onPress={() => router.push("/(tabs)/order")}
+        >
           <MaterialIcons name="receipt-long" size={24} color="#000" />
           <Text className="ml-4 text-black text-base">Your orders</Text>
         </TouchableOpacity>
-        <TouchableOpacity className="flex-row items-center px-4 py-3">
+        <TouchableOpacity
+          className="flex-row items-center px-4 py-3"
+          onPress={() => router.push("/help")}
+        >
           <Ionicons name="help-circle-outline" size={24} color="#000" />
           <Text className="ml-4 text-black text-base">Get help</Text>
         </TouchableOpacity>
-        <TouchableOpacity className="flex-row items-center px-4 py-3">
+        <TouchableOpacity
+          className="flex-row items-center px-4 py-3"
+          onPress={() => router.push("/about")}
+        >
           <Ionicons name="information-circle-outline" size={24} color="#000" />
           <Text className="ml-4 text-black text-base">About app</Text>
         </TouchableOpacity>

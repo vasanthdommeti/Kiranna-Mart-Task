@@ -2,6 +2,7 @@ import PromoModal from "@/components/PromoModal";
 import { useCart } from "@/context/CartContext";
 import { useLastTab } from "@/context/LastTabContext";
 import { useLocation } from "@/context/LocationContext";
+import { useAuthStore } from "@/store/auth";
 import { categories, restaurants } from "@/data";
 import { useTypewriter } from "@/utils/typeWriting";
 import { Ionicons } from "@expo/vector-icons";
@@ -17,7 +18,6 @@ import {
   Platform,
   ScrollView,
   Text,
-  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -35,9 +35,10 @@ const ChevronDownIcon = (props: any) => (
 
 export default function HomeScreen() {
   const router = useRouter();
-  const { setSelected, totalItems } = useCart();
+  const { totalItems } = useCart();
   const { setLastTab } = useLastTab();
   const { address } = useLocation();
+  const user = useAuthStore((s) => s.user);
   const insets = { top: 44, bottom: 34, left: 0, right: 0 };
   const tabBarHeight = useBottomTabBarHeight();
   const [headerLayout, setHeaderLayout] = useState<{
@@ -253,16 +254,42 @@ export default function HomeScreen() {
         {/* “Hey there!” card */}
         <View className="mx-4 mt-4 bg-white rounded-2xl p-4 shadow-sm border border-gray-100 flex-row">
           <View className="pr-2" style={{ flex: 7 }}>
-            <Text className="text-xl font-medium text-black">Hey there!</Text>
-            <Text className="text-gray-600 font-normal mt-1 text-base">
-              Log in or sign up for a more personalized ordering experience
-            </Text>
-            <TouchableOpacity
-              className="mt-4 bg-orange-500 px-5 py-2 rounded-full self-start"
-              onPress={() => router.navigate("/modal")}
-            >
-              <Text className="text-white font-medium text-base">Log in</Text>
-            </TouchableOpacity>
+            {user ? (
+              <>
+                <Text className="text-xl font-medium text-black">
+                  Hi {user.name}
+                </Text>
+                <Text className="text-gray-600 font-normal mt-1 text-base">
+                  You&apos;re signed in. Enjoy a faster checkout and a more
+                  personalized experience.
+                </Text>
+                <TouchableOpacity
+                  className="mt-4 border border-gray-300 px-5 py-2 rounded-full self-start"
+                  onPress={() => router.navigate("/(tabs)/account")}
+                >
+                  <Text className="text-gray-800 font-medium text-base">
+                    Go to account
+                  </Text>
+                </TouchableOpacity>
+              </>
+            ) : (
+              <>
+                <Text className="text-xl font-medium text-black">
+                  Hey there!
+                </Text>
+                <Text className="text-gray-600 font-normal mt-1 text-base">
+                  Log in or sign up for a more personalized ordering experience
+                </Text>
+                <TouchableOpacity
+                  className="mt-4 bg-orange-500 px-5 py-2 rounded-full self-start"
+                  onPress={() => router.push("/(auth)")}
+                >
+                  <Text className="text-white font-medium text-base">
+                    Log in
+                  </Text>
+                </TouchableOpacity>
+              </>
+            )}
           </View>
           <View className="items-end justify-center" style={{ flex: 3 }}>
             <Image

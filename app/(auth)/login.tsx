@@ -16,6 +16,7 @@ import {
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Svg, { Path } from "react-native-svg";
 import RemixLogo from "../../assets/images/remix-logo.svg";
+import { useAuthStore } from "@/store/auth";
 
 if (
   Platform.OS === "android" &&
@@ -27,6 +28,7 @@ if (
 export default function SecondLoginScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const signIn = useAuthStore((s) => s.signIn);
 
   const [showMore, setShowMore] = useState(false);
   const flexAnim = useRef(new Animated.Value(0.7)).current;
@@ -103,14 +105,23 @@ export default function SecondLoginScreen() {
         </Text>
         <TouchableOpacity
           className="flex-row items-center justify-center border border-black rounded-full py-3 mb-3"
-          onPress={() => router.push("/(tabs)")}
+          onPress={() => {
+            signIn("google");
+            router.replace("/(tabs)");
+          }}
         >
           <AntDesign name="google" size={20} color="#EA4335" className="mr-2" />
           <Text className="text-base text-gray-800 font-medium">
             Continue with Google
           </Text>
         </TouchableOpacity>
-        <TouchableOpacity className="flex-row items-center justify-center border border-black rounded-full py-3 mb-3">
+        <TouchableOpacity
+          className="flex-row items-center justify-center border border-black rounded-full py-3 mb-3"
+          onPress={() => {
+            signIn("facebook");
+            router.replace("/(tabs)");
+          }}
+        >
           <FontAwesome
             name="facebook"
             size={20}
@@ -122,7 +133,13 @@ export default function SecondLoginScreen() {
           </Text>
         </TouchableOpacity>
         {showMore && (
-          <TouchableOpacity className="flex-row items-center justify-center border border-black rounded-full py-3 mb-3">
+          <TouchableOpacity
+            className="flex-row items-center justify-center border border-black rounded-full py-3 mb-3"
+            onPress={() => {
+              signIn("email");
+              router.replace("/(tabs)");
+            }}
+          >
             <Ionicons
               name="mail-outline"
               size={20}

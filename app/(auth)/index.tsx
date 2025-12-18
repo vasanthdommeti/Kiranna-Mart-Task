@@ -17,6 +17,7 @@ import Svg, { Path, SvgProps } from "react-native-svg";
 import { SvgXml } from "react-native-svg";
 import RemixLogo from "../../assets/images/remix-logo.svg";
 
+import { useAuthStore } from "@/store/auth";
 import {
   AE,
   BH,
@@ -57,6 +58,8 @@ if (
 export default function LoginScreen() {
   const insets = useSafeAreaInsets();
   const router = useRouter();
+  const signIn = useAuthStore((s) => s.signIn);
+  const skipAuth = useAuthStore((s) => s.skipAuth);
 
   const [showMore, setShowMore] = useState(false);
   const flexAnim = useRef(new Animated.Value(0.7)).current;
@@ -111,7 +114,12 @@ export default function LoginScreen() {
                 className="ml-1"
               />
             </TouchableOpacity>
-            <TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => {
+                skipAuth();
+                router.replace("/(tabs)");
+              }}
+            >
               <Text className="text-white text-base underline">Skip</Text>
             </TouchableOpacity>
           </View>
@@ -155,7 +163,10 @@ export default function LoginScreen() {
         </Text>
         <TouchableOpacity
           className="flex-row items-center justify-center border border-black rounded-full py-3 mb-3"
-          onPress={() => router.replace("/(tabs)")}
+          onPress={() => {
+            signIn("google");
+            router.replace("/(tabs)");
+          }}
         >
           <AntDesign name="google" size={20} color="#EA4335" className="mr-2" />
           <Text className="text-base text-gray-800 font-medium">
@@ -164,7 +175,10 @@ export default function LoginScreen() {
         </TouchableOpacity>
         <TouchableOpacity
           className="flex-row items-center justify-center border border-black rounded-full py-3 mb-3"
-          onPress={() => router.replace("/(tabs)")}
+          onPress={() => {
+            signIn("facebook");
+            router.replace("/(tabs)");
+          }}
         >
           <FontAwesome
             name="facebook"
@@ -179,7 +193,10 @@ export default function LoginScreen() {
         {showMore && (
           <TouchableOpacity
             className="flex-row items-center justify-center border border-black rounded-full py-3 mb-3"
-            onPress={() => router.replace("/(tabs)")}
+            onPress={() => {
+              signIn("email");
+              router.replace("/(tabs)");
+            }}
           >
             <Ionicons
               name="mail-outline"

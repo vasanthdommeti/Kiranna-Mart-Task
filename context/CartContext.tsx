@@ -1,51 +1,20 @@
 "use client";
 import { CartContextType, Item } from "@/types";
-import React, { createContext, useContext, useMemo, useState } from "react";
+import { useCartStore } from "@/store/cart";
+import React, { createContext, useContext, useMemo } from "react";
 
 const CartContext = createContext<CartContextType | null>(null);
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
-  const [selected, setSelected] = useState<Item | null>(null);
-  const [cartItems, setCartItems] = useState<
-    { item: Item; quantity: number; note?: string }[]
-  >([]);
-  const [orderNote, setOrderNote] = useState("");
-
-  const addToCart = (item: Item, quantity: number = 1, note?: string) => {
-    setCartItems((prev) => {
-      const existing = prev.find((c) => c.item.id === item.id);
-      if (existing) {
-        return prev.map((c) =>
-          c.item.id === item.id
-            ? {
-                ...c,
-                quantity: Math.max(1, c.quantity + quantity),
-                note: note ?? c.note,
-              }
-            : c
-        );
-      }
-      return [...prev, { item, quantity: Math.max(1, quantity), note }];
-    });
-  };
-
-  const updateQuantity = (id: string, quantity: number) => {
-    setCartItems((prev) =>
-      prev
-        .map((c) =>
-          c.item.id === id ? { ...c, quantity: Math.max(0, quantity) } : c
-        )
-        .filter((c) => c.quantity > 0)
-    );
-  };
-
-  const updateNote = (id: string, note: string) => {
-    setCartItems((prev) =>
-      prev.map((c) => (c.item.id === id ? { ...c, note } : c))
-    );
-  };
-
-  const clearCart = () => setCartItems([]);
+  const cartItems = useCartStore((s) => s.cartItems);
+  const selected = useCartStore((s) => s.selected);
+  const setSelected = useCartStore((s) => s.setSelected);
+  const addToCart = useCartStore((s) => s.addToCart);
+  const updateQuantity = useCartStore((s) => s.updateQuantity);
+  const updateNote = useCartStore((s) => s.updateNote);
+  const clearCart = useCartStore((s) => s.clearCart);
+  const orderNote = useCartStore((s) => s.orderNote);
+  const setOrderNote = useCartStore((s) => s.setOrderNote);
 
   const totalItems = useMemo(
     () => cartItems.reduce((sum, c) => sum + c.quantity, 0),
