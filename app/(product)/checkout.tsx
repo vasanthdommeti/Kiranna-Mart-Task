@@ -1,4 +1,3 @@
-import { STRIPE_PUBLISHABLE_KEY } from "@/constants/stripe";
 import { useCart } from "@/context/CartContext";
 import { useLocation } from "@/context/LocationContext";
 import { useOrdersStore } from "@/store/orders";
@@ -20,6 +19,7 @@ export default function CheckoutScreen() {
   const { address } = useLocation();
   const addOrder = useOrdersStore((s) => s.addOrder);
   const [processing, setProcessing] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<"cash" | "card">("cash");
 
   const subtotal = useMemo(
     () =>
@@ -33,9 +33,8 @@ export default function CheckoutScreen() {
     setProcessing(true);
     /**
      * NOTE:
-     * Expo Go does not include the native Stripe module, so we run a simulated
-     * test checkout. In a real app, fetch a PaymentIntent client secret from a
-     * backend and use Stripe's PaymentSheet here.
+     * This is a simulated checkout. Hook up a real payment provider when a
+     * backend is available.
      */
     const now = Date.now();
     const orderId = `ord-${now}`;
@@ -71,7 +70,7 @@ export default function CheckoutScreen() {
     setTimeout(() => {
       clearCart();
       setProcessing(false);
-      Alert.alert("Success", "Simulated payment completed (Stripe test mode).", [
+      Alert.alert("Success", "Order placed successfully.", [
         {
           text: "OK",
           onPress: () => router.replace(`/(tabs)/order/${orderId}`),
@@ -126,20 +125,67 @@ export default function CheckoutScreen() {
           </View>
         </View>
 
-        <View className="mt-6 bg-orange-50 rounded-xl p-4">
-          <Text className="text-base font-semibold text-orange-700">
-            Stripe test mode
-          </Text>
-          <Text className="text-gray-700 mt-2">
-            This checkout is set up for Stripe test mode. A backend is required
-            to generate PaymentIntent client secrets. Because Expo Go lacks the
-            native Stripe module and no backend is configured, the flow will
-            simulate a successful payment for testing purposes.
-          </Text>
-          <Text className="text-gray-700 mt-2 font-semibold">
-            Publishable key:
-          </Text>
-          <Text className="text-gray-700">{STRIPE_PUBLISHABLE_KEY}</Text>
+        <Text className="mt-6 text-base font-semibold text-black">
+          Payment method
+        </Text>
+        <View className="mt-3 bg-white rounded-2xl border border-gray-200 p-4">
+          <TouchableOpacity
+            className="flex-row items-center justify-between"
+            onPress={() => setPaymentMethod("cash")}
+            activeOpacity={0.8}
+          >
+            <View className="flex-row items-center">
+              <View className="w-10 h-10 rounded-full bg-orange-50 items-center justify-center">
+                <Ionicons name="cash-outline" size={20} color="#F97316" />
+              </View>
+              <View className="ml-3">
+                <Text className="text-base font-semibold">Cash on delivery</Text>
+                <Text className="text-sm text-gray-500">
+                  Pay at your doorstep
+                </Text>
+              </View>
+            </View>
+            <View
+              className="w-5 h-5 rounded-full border border-orange-500 items-center justify-center"
+              style={{
+                backgroundColor: paymentMethod === "cash" ? "#F97316" : "#fff",
+              }}
+            >
+              {paymentMethod === "cash" ? (
+                <Ionicons name="checkmark" size={12} color="#fff" />
+              ) : null}
+            </View>
+          </TouchableOpacity>
+
+          <View className="h-px bg-gray-100 my-4" />
+
+          <TouchableOpacity
+            className="flex-row items-center justify-between"
+            onPress={() => setPaymentMethod("card")}
+            activeOpacity={0.8}
+          >
+            <View className="flex-row items-center">
+              <View className="w-10 h-10 rounded-full bg-gray-100 items-center justify-center">
+                <Ionicons name="card-outline" size={20} color="#333" />
+              </View>
+              <View className="ml-3">
+                <Text className="text-base font-semibold">Card</Text>
+                <Text className="text-sm text-gray-500">
+                  Add card for faster checkout
+                </Text>
+              </View>
+            </View>
+            <View
+              className="w-5 h-5 rounded-full border border-orange-500 items-center justify-center"
+              style={{
+                backgroundColor: paymentMethod === "card" ? "#F97316" : "#fff",
+              }}
+            >
+              {paymentMethod === "card" ? (
+                <Ionicons name="checkmark" size={12} color="#fff" />
+              ) : null}
+            </View>
+          </TouchableOpacity>
         </View>
 
         <TouchableOpacity
@@ -148,7 +194,7 @@ export default function CheckoutScreen() {
           disabled={processing}
         >
           <Text className="text-white text-base font-semibold">
-            {processing ? "Processing..." : "Simulate test payment"}
+            {processing ? "Processing..." : "Place order"}
           </Text>
         </TouchableOpacity>
       </ScrollView>
