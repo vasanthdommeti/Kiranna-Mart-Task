@@ -1,8 +1,38 @@
-# Welcome to your Expo app 👋
+# Kiranna-Mart (Quick Commerce App)
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Quick commerce mobile app built with Expo Router. The codebase focuses on a full user flow: discovery, search, cart, checkout, orders, and account/help screens.
 
-## Get started
+## Features implemented
+
+- Auth flow with skip + persisted dummy user; logout clears cart
+- Location selection + header updates
+- Search (restaurants and items) with results and empty state UX
+- Cart with item editing modal, notes, special requests, and empty-cart UX
+- Checkout with payment method widget and simulated order placement
+- Orders list/history + order detail with status timeline
+- Help and About screens with FAQ dropdowns
+
+## Key screens/routes
+
+- Home: `app/(tabs)/index.tsx`
+- Orders: `app/(tabs)/order.tsx`
+- Order details: `app/(tabs)/order/[id].tsx`
+- Account: `app/(tabs)/account.tsx`
+- Product detail: `app/(product)/index.tsx`
+- Cart: `app/(product)/cart.tsx`
+- Checkout: `app/(product)/checkout.tsx`
+- Search: `app/search.tsx`
+- Location: `app/location.tsx`
+- Help: `app/help.tsx`
+- About: `app/about.tsx`
+
+## Tech stack
+
+- Expo SDK 53 + Expo Router
+- React Native + NativeWind (Tailwind classes)
+- Zustand + AsyncStorage for persisted state
+
+## Getting started
 
 1. Install dependencies
 
@@ -23,28 +53,7 @@ In the output, you'll find options to open the app in a
 - [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
 - [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## Notes
 
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+- Checkout is a simulated flow (no backend payment integration).
+- Orders, cart, and auth states persist locally via AsyncStorage.
